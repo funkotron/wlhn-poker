@@ -1,0 +1,3 @@
+* West London Hack Night - Poker
+
+Scoring a poker hand, in Clojure.
