@@ -61,6 +61,23 @@
        (map second)
        (apply max)))
 
+(defn remove-highest
+  [hand]
+  (remove #(= (second %) (highest hand)) hand))
+
+(defn highest-kicker [hand1 hand2]
+  (loop [hand1' hand1
+         hand2' hand2]
+    (cond
+     (> (highest hand1') (highest hand2'))
+     hand1
+     (< (highest hand1') (highest hand2'))
+     hand2
+     (= (count hand1') 1)
+     :draw
+     (= (highest hand1') (highest hand2'))
+     (recur (remove-highest hand1') (remove-highest hand2')))))
+
 (defn score-hand
   [hand]
   (cond
@@ -81,23 +98,28 @@
        (take n)))
 
 (defn compare-hands [hand1 hand2]
-  (if (> (score-hand hand1) (score-hand hand2))
+  (cond
+   (> (score-hand hand1) (score-hand hand2))
     hand1
-    hand2))
+   (= (score-hand hand1) (score-hand hand2))
+    (highest-kicker hand1 hand2)
+   :else hand2))
 
 (defn winner [hands]
   (reduce compare-hands hands))
 
-(dotimes [_ 10]
- (->> (shuffle pack)
-      (take 5)
-      ((juxt score-hand identity))
-      pprint))
+(defn score-five [] 
+  (dotimes [_ 10]
+    (->> (shuffle pack)
+         (take 5)
+         ((juxt score-hand identity))
+         pprint)))
 
-(time
- (pprint
-  (loop [n 0]
-    (let [hand (take 5 (shuffle pack))]
-      (if (royal-flush? hand)
-        n
-        (recur (inc n)))))))
+(defn flush-me []
+  (time
+   (pprint
+    (loop [n 0]
+      (let [hand (take 5 (shuffle pack))]
+        (if (royal-flush? hand)
+          n
+          (recur (inc n))))))))
